@@ -192,6 +192,45 @@ wonder.showInfo=i=>{
 	divi.innerHTML=h
 }
 
+wonder.showTable=i=>{
+	let divs = document.querySelectorAll('#showButtonSelection')
+	let divi = divs[divs.length-i]
+	if(!divi.textContent.match(/^\(tabulation/)){
+		divi.innerHTML='(tabulation of same data exportable as csv above)'
+		divi.appendChild(wonder.htmlTable(wonder.data[i-1]))
+	}else{
+		divi.innerHTML=''
+	}
+	return divi
+}
+
+wonder.htmlTable=(data)=>{
+	let div = document.createElement('div')
+	div.style.color="navy"
+	let cols = Object.keys(data.dt[0])
+	let parms = cols.filter(c=>typeof(data.dt[0][c])=='string')
+	let vals = cols.filter(c=>typeof(data.dt[0][c])=='number')
+	div.innerHTML=`Rows: <select id="selRow"></select> Cols: <select id="selCol"></select><div id="tableDiv"></div>`
+	let selRow = div.querySelector('#selRow')
+	let selCol = div.querySelector('#selCol')
+	parms.forEach(p=>{
+		let optRow = document.createElement('option')
+		let optCol = document.createElement('option')
+		optRow.value=optCol.value=optRow.textContent=optCol.textContent=p
+		selRow.appendChild(optRow)
+		selCol.appendChild(optCol)
+	})
+	selRow.onchange=selCol.onchange=(ev)=>{
+		dv = div.querySelector('#tableDiv')
+		rowParms = new Set([...data.dt.map(d=>d[selRow.value])])
+		colParms = new Set([...data.dt.map(d=>d[selCol.value])])
+		console.log(rowParms,colParms)
+
+	}
+
+	return div
+}
+
 
 wonder.showData=(div,data)=>{
     let i = div.parentElement.childElementCount
@@ -200,7 +239,7 @@ wonder.showData=(div,data)=>{
     h += `<li><b>Last modified:</b> ${data.lastModifiedDate}</li>`
     h += `<li><b>Fields (${Object.keys(data.dt[0]).length}):</b> ${Object.keys(data.dt[0]).join(',')}</li>`
     h += `<li><b>Export (${data.dt.length}):</b> <button onclick="wonder.saveJson(${i})">JSON</button> <button onclick="wonder.saveCsv(${i})">CSV</button></li>`
-    h += `<li><b>Show:</b> <button>Table</button> <button onclick="wonder.showQuery(${i})">Query</button> <button onclick="wonder.showInfo(${i})">Info</button></li>`
+    h += `<li><b>Show:</b> <button onclick="wonder.showTable(${i})">Table</button> <button onclick="wonder.showQuery(${i})">Query</button> <button onclick="wonder.showInfo(${i})">Info</button></li>`
     h += `<div id="showButtonSelection" style="font-size:small;color:green"></div>`
     div.innerHTML=h
     return div
