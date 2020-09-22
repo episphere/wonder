@@ -38,7 +38,7 @@ wonder.demo=i=>{
         'Place of death jan-july 2015-2018 by state.txt'
     ]
     let url=urls[i-1]
-    inputWonderURL.value='https://episphere.github.io/mortalitytracker/wonder/'+url
+    inputWonderURL.value='https://episphere.github.io/wonder/'+url
     loadURLbutton.click()
 }
 
@@ -173,13 +173,25 @@ wonder.saveCsv=i=>{
 }
 
 wonder.showQuery=i=>{
-	let h = wonder.data[i-1].queryHTML()
-	let divs=document.querySelectorAll('#showButtonSelection')
+	let divs = document.querySelectorAll('#showButtonSelection')
 	let divi = divs[divs.length-i]
-	console.log(i,divi)
+	let h = ''
+	if(!divi.textContent.match(/^Dataset\:/)){
+		h = wonder.data[i-1].queryHTML()
+	}
 	divi.innerHTML=h
-	//debugger
 }
+
+wonder.showInfo=i=>{
+	let divs = document.querySelectorAll('#showButtonSelection')
+	let divi = divs[divs.length-i]
+	let h = ''
+	if(!divi.textContent.match(/^Help\:/)){
+		h = wonder.data[i-1].infoHTML()
+	}
+	divi.innerHTML=h
+}
+
 
 wonder.showData=(div,data)=>{
     let i = div.parentElement.childElementCount
@@ -188,7 +200,7 @@ wonder.showData=(div,data)=>{
     h += `<li><b>Last modified:</b> ${data.lastModifiedDate}</li>`
     h += `<li><b>Fields (${Object.keys(data.dt[0]).length}):</b> ${Object.keys(data.dt[0]).join(',')}</li>`
     h += `<li><b>Export (${data.dt.length}):</b> <button onclick="wonder.saveJson(${i})">JSON</button> <button onclick="wonder.saveCsv(${i})">CSV</button></li>`
-    h += `<li><b>Show:</b> <button>Table</button> <button onclick="wonder.showQuery(${i})">Query</button> <button>Info</button></li>`
+    h += `<li><b>Show:</b> <button>Table</button> <button onclick="wonder.showQuery(${i})">Query</button> <button onclick="wonder.showInfo(${i})">Info</button></li>`
     h += `<div id="showButtonSelection" style="font-size:small;color:green"></div>`
     div.innerHTML=h
     return div
