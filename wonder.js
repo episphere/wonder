@@ -173,10 +173,11 @@ wonder.saveCsv=i=>{
 }
 
 wonder.showQuery=i=>{
+	let h = wonder.data[i-1].queryHTML()
 	let divs=document.querySelectorAll('#showButtonSelection')
 	let divi = divs[divs.length-i]
 	console.log(i,divi)
-	divi.innerHTML=wonder.data[i-1].queryHTML()
+	divi.innerHTML=h
 	//debugger
 }
 
