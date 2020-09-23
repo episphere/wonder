@@ -48,7 +48,7 @@ wonder.parseTxt=(txt,fname,lastModifiedDate,div0=document.getElementById('wonder
     }
     lastModifiedDate=lastModifiedDate||new Date(Date.now())
     let y = {fname:fname,txt:txt,lastModifiedDate:lastModifiedDate}
-    console.log(y)
+    //console.log(y)
     //
     // assemble results array structure here
     wonder.data=wonder.data||[]
@@ -212,7 +212,7 @@ wonder.htmlTable=(data)=>{
 	let cols = Object.keys(dt[0])
 	let parms = cols.filter(c=>typeof(dt[0][c])=='string')
 	let vals = cols.filter(c=>typeof(dt[0][c])=='number')
-	div.innerHTML=`Rows: <select id="selRow"></select> Cols: <select id="selCol"></select> Values: <select id="selVal"></select><div id="tableDiv"></div>`
+	div.innerHTML=`Rows: <select id="selRow"></select> Cols: <select id="selCol"></select> Values: <select id="selVal"></select><button onclick="wonder.copyTable(this)">copy</button><div id="tableDiv"></div>`
 	let selRow = div.querySelector('#selRow')
 	let selCol = div.querySelector('#selCol')
 	let selVal = div.querySelector('#selVal')
@@ -237,7 +237,7 @@ wonder.htmlTable=(data)=>{
 		dv = div.querySelector('#tableDiv')
 		rowParms = new Set([...dt.map(d=>d[selRow.value])])
 		colParms = new Set([...dt.map(d=>d[selCol.value])])
-		console.log(rowParms,colParms,selVal.value)
+		//console.log(rowParms,colParms,selVal.value)
 		// tabulate
 		h='<table>'
 		// header
@@ -272,6 +272,26 @@ wonder.htmlTable=(data)=>{
 		
 
 	return div
+}
+
+wonder.copyTable=(tb)=>{ // copy table in the parent  to clipboard
+    if(tb.tagName=="BUTTON"){
+    	let bt = tb
+    	bt.textContent="table copied"
+    	setTimeout(_=>{
+    		bt.textContent="copy"
+    	},1000)
+    	tb=bt.parentElement.querySelector('table')
+    }
+	// convert th into td
+	let h = tb.innerHTML
+	h = h.replace(/\<tbody\>/g,'').replace('</tbody>','').replace(/\<th[^>]*\>/g,'<td>').replace(/<\/th>/g,'</td>').replace(/\<td[^>]*\>/g,'<td>').replace(/<\/td><td>/g,'\t').replace(/<\/tr><tr>/g,'\r\n').replace(/<[\/]*tr>/g,'').replace(/<[\/]*td>/g,'').replace(/<[\/]*table>/g,'')
+	let ta = document.createElement('textarea')
+	document.body.appendChild(ta)
+	ta.value = h
+	ta.select()
+	document.execCommand("copy")
+	ta.parentElement.removeChild(ta)
 }
 
 
