@@ -81,6 +81,7 @@ wonder.parseTxt=(txt,fname,lastModifiedDate,div0=document.getElementById('wonder
         tb[i]=x
     })
     y.dt=tb
+    y.sep=sep
     wonder.data.push(y)
     if(div0){ // if a division is defined for visualization
         let div=document.createElement('div')
@@ -205,14 +206,16 @@ wonder.showTable=i=>{
 }
 
 wonder.htmlTable=(data)=>{
+    let dt = data.dt.slice(0,data.sep[0]) // only the table
 	let div = document.createElement('div')
 	div.style.color="navy"
-	let cols = Object.keys(data.dt[0])
-	let parms = cols.filter(c=>typeof(data.dt[0][c])=='string')
-	let vals = cols.filter(c=>typeof(data.dt[0][c])=='number')
-	div.innerHTML=`Rows: <select id="selRow"></select> Cols: <select id="selCol"></select><div id="tableDiv"></div>`
+	let cols = Object.keys(dt[0])
+	let parms = cols.filter(c=>typeof(dt[0][c])=='string')
+	let vals = cols.filter(c=>typeof(dt[0][c])=='number')
+	div.innerHTML=`Rows: <select id="selRow"></select> Cols: <select id="selCol"></select> Values: <select id="selVal"></select><div id="tableDiv"></div>`
 	let selRow = div.querySelector('#selRow')
 	let selCol = div.querySelector('#selCol')
+	let selVal = div.querySelector('#selVal')
 	parms.forEach(p=>{
 		let optRow = document.createElement('option')
 		let optCol = document.createElement('option')
@@ -220,13 +223,53 @@ wonder.htmlTable=(data)=>{
 		selRow.appendChild(optRow)
 		selCol.appendChild(optCol)
 	})
-	selRow.onchange=selCol.onchange=(ev)=>{
-		dv = div.querySelector('#tableDiv')
-		rowParms = new Set([...data.dt.map(d=>d[selRow.value])])
-		colParms = new Set([...data.dt.map(d=>d[selCol.value])])
-		console.log(rowParms,colParms)
-
+	vals.forEach(v=>{
+		let optVal = document.createElement('option')
+		optVal.value=optVal.textContent=v
+		selVal.appendChild(optVal)
+	})
+	if(data.selRow){ // if values kept from last time
+		selRow.value=data.selRow
+		selCol.value=data.selCol
+		selVal.value=data.selVal
 	}
+	selRow.onchange=selCol.onchange=selVal.onchange=(ev)=>{
+		dv = div.querySelector('#tableDiv')
+		rowParms = new Set([...dt.map(d=>d[selRow.value])])
+		colParms = new Set([...dt.map(d=>d[selCol.value])])
+		console.log(rowParms,colParms,selVal.value)
+		// tabulate
+		h='<table>'
+		// header
+		h+=`<tr><th>[${selVal.value}]</th>`
+		colParms.forEach(c=>{
+			h+=`<th>${c}</th>`
+		})
+		h+='</tr>'
+		// each row
+		rowParms.forEach(r=>{
+			h+=`<tr><th style="text-align:right">${r}</th>`
+			colParms.forEach(c=>{
+				let k = 0
+				dt.filter(d=>(d[selRow.value]==r&d[selCol.value]==c)).forEach(x=>{
+					let ki=x[selVal.value]
+					if(typeof(ki)=='number'){
+						k+=ki
+					}
+			    })
+				h+=`<td style="color:blue;text-align:center">${k}</td>`
+			})
+			h += '</tr>'
+		})
+		h+='</table>'
+		// keeping current selections for next run
+		data.selRow=selRow.value
+		data.selCol=selCol.value
+		data.selVal=selVal.value
+		dv.innerHTML=h
+	}
+	selRow.onchange()
+		
 
 	return div
 }
@@ -239,7 +282,7 @@ wonder.showData=(div,data)=>{
     h += `<li><b>Last modified:</b> ${data.lastModifiedDate}</li>`
     h += `<li><b>Fields (${Object.keys(data.dt[0]).length}):</b> ${Object.keys(data.dt[0]).join(',')}</li>`
     h += `<li><b>Export (${data.dt.length}):</b> <button onclick="wonder.saveJson(${i})">JSON</button> <button onclick="wonder.saveCsv(${i})">CSV</button></li>`
-    h += `<li><b>Show:</b> <button onclick="wonder.showTable(${i})">Table</button> <button onclick="wonder.showQuery(${i})">Query</button> <button onclick="wonder.showInfo(${i})">Info</button></li>`
+    h += `<li><b>Show:</b> <button id="showTableButton" onclick="wonder.showTable(${i})">Table</button> <button onclick="wonder.showQuery(${i})">Query</button> <button onclick="wonder.showInfo(${i})">Info</button></li>`
     h += `<div id="showButtonSelection" style="font-size:small;color:green"></div>`
     div.innerHTML=h
     return div
